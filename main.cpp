@@ -35,9 +35,11 @@ int main() {
             {
                 std::string response;
                 auto messages = callback.get<dpp::message_map>();
+                // lists amount of messages retrieved and appends to response
                 response += "Retrieved " + std::to_string(messages.size()) + " messages\n";
                 for (const auto& [msg_id, msg] : messages)
                 {
+                    // if link starts with https://, it appends the content and details to the response
                     if (msg.content.starts_with("https://"))
                     {
                         response += (msg.author.username + " : '" + msg.content + "' posted on: " + std::to_string(msg.get_creation_time()) + "\n");
