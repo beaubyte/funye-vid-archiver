@@ -56,7 +56,7 @@ int main()
             event.reply("Starting archive of messages to #:pushpin:-funye-vid-pin-archive-:pushpin:");
             dpp::snowflake channel_id = event.command.channel_id;
             dpp::message response_msg;
-            bot.messages_get(channel_id, 0,0,0,20, [event, &response_msg](const dpp::confirmation_callback_t& callback)
+            bot.messages_get(channel_id, 0,0,0,1, [event, &response_msg, &bot](const dpp::confirmation_callback_t& callback)
             {
                 auto messages = callback.get<dpp::message_map>();
                 // lists amount of messages retrieved and appends to response
@@ -68,17 +68,22 @@ int main()
                         std::string yt_dlp_command = "yt-dlp -o output.mp4 ";
                         yt_dlp_command += msg.content;
                         system(yt_dlp_command.c_str());
-                        response_msg.add_file("output.mp4", msg.content);
+                        response_msg.add_file("./output.mp4", msg.content);
                     }
                 }
-            });
-            response_msg.channel_id = ARCHIVE_CHANNEL_ID;
-            bot.message_create((response_msg), [](const dpp::confirmation_callback_t& callback)
-            {
-                if (callback.is_error())
+                std::cout << "Done with file downloads\n";
+                response_msg.channel_id = ARCHIVE_CHANNEL_ID;
+                std::cout << "Sending message:\n";
+                bot.message_create((response_msg), [](const dpp::confirmation_callback_t& callback)
                 {
-                    std::cout << "Error sending message: " << callback.get_error().message << std::endl;
-                }
+                    if (callback.is_error())
+                    {
+                        std::cout << "Error sending message: " << callback.get_error().message << std::endl;
+                    } else
+                    {
+                        std::cout << "Message sent!" << std::endl;
+                    }
+                });
             });
         }
     });
