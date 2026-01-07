@@ -55,7 +55,7 @@ int main()
         {
             event.thinking();
             dpp::snowflake channel_id = event.command.channel_id;
-            bot.messages_get(channel_id, 0,0,0,1, [event](const dpp::confirmation_callback_t& callback)
+            bot.messages_get(channel_id, 0,0,0,std::get<int64_t>(event.get_parameter("num_messages")), [event](const dpp::confirmation_callback_t& callback)
             {
                 dpp::message response_msg(ARCHIVE_CHANNEL_ID, "");
                 if (callback.is_error())
@@ -79,7 +79,7 @@ int main()
                 }
                 for (int i = 0; i < urls.size(); i++)
                 {
-                    std::string yt_dlp_command = "yt-dlp -o output" + std::to_string(i) + ".mp4 ";
+                    std::string yt_dlp_command = "yt-dlp -o output" + std::to_string(i) + ".mp4 --force-overwrite ";
                     yt_dlp_command += urls[i];
                     std::cout << yt_dlp_command << std::endl;
                     system(yt_dlp_command.c_str());
@@ -87,18 +87,6 @@ int main()
                 }
                 std::cout << "Done with file downloads\n";
                 event.edit_response(response_msg);
-                /*
-                bot.message_create((response_msg), [](const dpp::confirmation_callback_t& callback)
-                {
-                    if (callback.is_error())
-                    {
-                        std::cout << "Error sending message: " << callback.get_error().message << std::endl;
-                    } else
-                    {
-                        std::cout << "Message sent!" << std::endl;
-                    }
-                });
-                */
             });
         }
     });
@@ -108,7 +96,10 @@ int main()
         if (dpp::run_once<struct register_bot_commands>()) {
             bot.global_command_create(dpp::slashcommand("version", "prints the version of funye-vid-archiver", bot.me.id));
             bot.global_command_create(dpp::slashcommand("getlinks", "gets last 20 messages that include website links", bot.me.id));
-            bot.global_command_create(dpp::slashcommand("archive", "replies with last 20 message with links and their downloaded videos", bot.me.id));
+            dpp::slashcommand archive("archive", "replies with the last x amount of links as downloaded mp4s", bot.me.id);
+            archive.add_option(
+                dpp::command_option(dpp::co_integer, "num_messages", "number of previous messages to archive", true));
+            bot.global_command_create(archive);
         }
     });
 
