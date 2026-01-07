@@ -20,10 +20,13 @@ int main() {
     bot.intents = dpp::i_default_intents | dpp::i_message_content;
     bot.on_log(dpp::utility::cout_logger());
 
+    // when a slash command is given
     bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) {
+        // version command, prints version of the bot
         if (event.command.get_command_name() == "version") {
             event.reply("current version: " + version);
         }
+        // getlinks command: gets last 20 messages with a link
         if (event.command.get_command_name() == "getlinks")
         {
             dpp::snowflake channel_id = event.command.channel_id;
