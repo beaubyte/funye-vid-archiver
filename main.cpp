@@ -53,27 +53,41 @@ int main()
         }
         if (event.command.get_command_name() == "archive")
         {
-            event.reply("Starting archive of messages to #:pushpin:-funye-vid-pin-archive-:pushpin:");
+            event.thinking();
             dpp::snowflake channel_id = event.command.channel_id;
-            dpp::message response_msg;
-            bot.messages_get(channel_id, 0,0,0,1, [event, &response_msg, &bot](const dpp::confirmation_callback_t& callback)
+            bot.messages_get(channel_id, 0,0,0,1, [event](const dpp::confirmation_callback_t& callback)
             {
+                dpp::message response_msg(ARCHIVE_CHANNEL_ID, "");
+                if (callback.is_error())
+                {
+                    event.edit_response("Failed to fetch messages");
+                }
                 auto messages = callback.get<dpp::message_map>();
                 // lists amount of messages retrieved and appends to response
+                std::vector<std::string> urls;
                 for (const auto& [msg_id, msg] : messages)
                 {
                     // if link starts with https://, it appends the content and details to the response, and then downloads the video
                     if (msg.content.starts_with("https://")) // i should detect links better or ill feed bad stuff to yt-dlp
                     {
-                        std::string yt_dlp_command = "yt-dlp -o output.mp4 ";
-                        yt_dlp_command += msg.content;
-                        system(yt_dlp_command.c_str());
-                        response_msg.add_file("./output.mp4", msg.content);
+                        urls.push_back(msg.content);
                     }
                 }
+                if (urls.empty())
+                {
+                    event.edit_response("No links were found");
+                }
+                for (int i = 0; i < urls.size(); i++)
+                {
+                    std::string yt_dlp_command = "yt-dlp -o output" + std::to_string(i) + ".mp4 ";
+                    yt_dlp_command += urls[i];
+                    std::cout << yt_dlp_command << std::endl;
+                    system(yt_dlp_command.c_str());
+                    response_msg.add_file("output.mp4", dpp::utility::read_file("./output" + std::to_string(i) + ".mp4"));
+                }
                 std::cout << "Done with file downloads\n";
-                response_msg.channel_id = ARCHIVE_CHANNEL_ID;
-                std::cout << "Sending message:\n";
+                event.edit_response(response_msg);
+                /*
                 bot.message_create((response_msg), [](const dpp::confirmation_callback_t& callback)
                 {
                     if (callback.is_error())
@@ -84,6 +98,7 @@ int main()
                         std::cout << "Message sent!" << std::endl;
                     }
                 });
+                */
             });
         }
     });
