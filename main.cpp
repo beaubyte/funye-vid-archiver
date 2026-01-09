@@ -4,7 +4,7 @@
 #include <dpp/dpp.h>
 
 std::string BOT_TOKEN;
-dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556;
+dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556; // i should make this an environment variable
 std::string version = "0.0.3";
 
 int main()
@@ -89,6 +89,8 @@ int main()
                 }
                 std::cout << "Done with file downloads\n";
                 event.edit_response(response_msg);
+                // removes output files to prevent previous files from being uploaded if yt-dlp command fails
+                system("rm output*");
             });
         }
     });
