@@ -1,10 +1,11 @@
 #include <iostream>
 #include <cstdlib>
+#include <regex>
 #include <dpp/dpp.h>
 
 std::string BOT_TOKEN;
 dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556;
-std::string version = "0.0.2";
+std::string version = "0.0.3";
 
 int main()
 {
@@ -67,15 +68,16 @@ int main()
                 std::vector<std::string> urls;
                 for (const auto& [msg_id, msg] : messages)
                 {
-                    // if link starts with https://, it appends the content and details to the response, and then downloads the video
-                    if (msg.content.starts_with("https://")) // i should detect links better or ill feed bad stuff to yt-dlp
+                    // if message matches the URL regex, it appends the content and details to the response, and then downloads the video
+                    const std::regex url_pattern(R"(^https?://[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+$)");
+                    if (std::regex_match(msg.content, url_pattern)) // i should detect links better or command injection might be possible, i will update to use fork later
                     {
                         urls.push_back(msg.content);
                     }
                 }
                 if (urls.empty())
                 {
-                    event.edit_response("No links were found");
+                    event.edit_response("No valid links were found");
                 }
                 for (int i = 0; i < urls.size(); i++)
                 {
