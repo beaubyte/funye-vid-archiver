@@ -104,6 +104,11 @@ int main()
             archive.add_option(
                 dpp::command_option(dpp::co_integer, "num_messages", "number of previous messages to archive", true));
             bot.global_command_create(archive);
+            dpp::slashcommand pin_archive("pin_archive", "downloads provided link and sends it to pin archive", bot.me.id);
+            pin_archive.add_option(
+                dpp::command_option(dpp::co_string, "video_url", "video link to archive", true));
+            pin_archive.add_option(
+                dpp::command_option(dpp::co_string, "description", "description of video for finding later", false));
         }
     });
 
