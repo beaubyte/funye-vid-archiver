@@ -34,7 +34,6 @@ int main()
         if (event.command.get_command_name() == "getlinks")
         {
             dpp::snowflake channel_id = event.command.channel_id;
-
             bot.messages_get(channel_id, 0,0,0,20, [event](const dpp::confirmation_callback_t& callback)
             {
                 std::string response;
@@ -81,6 +80,7 @@ int main()
                 }
                 for (int i = 0; i < urls.size(); i++)
                 {
+                    // i should refactor this to be its own class
                     std::string yt_dlp_command = "yt-dlp -o output" + std::to_string(i) + ".mp4 --force-overwrite ";
                     yt_dlp_command += urls[i];
                     std::cout << yt_dlp_command << std::endl;
@@ -92,6 +92,27 @@ int main()
                 // removes output files to prevent previous files from being uploaded if yt-dlp command fails
                 system("rm output*");
             });
+        }
+        if (event.command.get_command_name() == "pin_archive")
+        {
+            event.thinking();
+            std::string video_url = std::get<std::string>(event.get_parameter("video_url"));
+            std::string description = std::get<std::string>(event.get_parameter("description"));
+            const std::regex url_pattern(R"(^https?://[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+$)");
+            dpp::message pin_message(ARCHIVE_CHANNEL_ID, description);
+            if (std::regex_match(video_url, url_pattern))
+            {
+                std::string yt_dlp_command = "yt-dlp -o output.mp4 --force-overwrite " + video_url;
+                system(yt_dlp_command.c_str());
+                pin_message.add_file(description + ".mp4", dpp::utility::read_file("output.mp4"));
+                event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
+                system("rm output.mp4");
+            } else
+            {
+                event.edit_response("link is not valid");
+                return;
+            }
+            bot.message_create(pin_message);
         }
     });
 
@@ -108,7 +129,8 @@ int main()
             pin_archive.add_option(
                 dpp::command_option(dpp::co_string, "video_url", "video link to archive", true));
             pin_archive.add_option(
-                dpp::command_option(dpp::co_string, "description", "description of video for finding later", false));
+                dpp::command_option(dpp::co_string, "description", "description of video for finding later", true));
+            bot.global_command_create(pin_archive);
         }
     });
 
