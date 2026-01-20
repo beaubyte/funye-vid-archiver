@@ -5,7 +5,7 @@
 
 std::string BOT_TOKEN;
 dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556; // i should make this an environment variable
-std::string version = "0.0.3";
+std::string version = "0.0.5";
 
 int main()
 {
@@ -30,6 +30,7 @@ int main()
         if (event.command.get_command_name() == "version") {
             event.reply("current version: " + version);
         }
+
         // getlinks command: gets last 20 messages with a link
         if (event.command.get_command_name() == "getlinks")
         {
@@ -51,6 +52,8 @@ int main()
                 event.reply(response);
             });
         }
+
+        // archive command: archive x amount of messages with links
         if (event.command.get_command_name() == "archive")
         {
             event.thinking();
@@ -93,6 +96,8 @@ int main()
                 system("rm output*");
             });
         }
+
+        // pin archive command: archive provided link with description to pin archive channel
         if (event.command.get_command_name() == "pin_archive")
         {
             event.thinking();
@@ -106,26 +111,30 @@ int main()
                 system(yt_dlp_command.c_str());
                 pin_message.add_file(description + ".mp4", dpp::utility::read_file("output.mp4"));
                 event.edit_response("sending video to #📌-funye-vid-pin-archive-📌...");
-                system("rm output.mp4");
             } else
             {
-                event.edit_response("link is not valid");
-                return;
+                event.edit_response("archive failed: link is not valid");
             }
-            bot.message_create(pin_message, [event](const dpp::confirmation_callback_t& callback)
+            if (std::filesystem::exists("output.mp4"))
             {
-                if (callback.is_error())
+                bot.message_create(pin_message, [event](const dpp::confirmation_callback_t& callback)
                 {
-                    auto error = callback.get_error();
-                    if (error.code == 40005)
+                    if (callback.is_error())
                     {
-                        event.edit_response("archive failed: file denied because it exceeds the size limit");
+                        auto error = callback.get_error();
+                        if (error.code == 40005)
+                        {
+                            event.edit_response("archive failed: file denied because it exceeds the size limit");
+                        }
+                    } else
+                    {
+                        event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
+                        system("rm output.mp4");
                     }
-                } else
-                {
-                    event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
-                }
-            });
+                });
+            } else {
+                event.edit_response("archive failed: video failed to download");
+            }
         }
     });
 
