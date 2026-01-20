@@ -105,14 +105,27 @@ int main()
                 std::string yt_dlp_command = "yt-dlp -o output.mp4 --force-overwrite " + video_url;
                 system(yt_dlp_command.c_str());
                 pin_message.add_file(description + ".mp4", dpp::utility::read_file("output.mp4"));
-                event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
+                event.edit_response("sending video to #📌-funye-vid-pin-archive-📌...");
                 system("rm output.mp4");
             } else
             {
                 event.edit_response("link is not valid");
                 return;
             }
-            bot.message_create(pin_message);
+            bot.message_create(pin_message, [event](const dpp::confirmation_callback_t& callback)
+            {
+                if (callback.is_error())
+                {
+                    auto error = callback.get_error();
+                    if (error.code == 40005)
+                    {
+                        event.edit_response("archive failed: file denied because it exceeds the size limit");
+                    }
+                } else
+                {
+                    event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
+                }
+            });
         }
     });
 
