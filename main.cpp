@@ -110,7 +110,7 @@ int main()
                 std::string yt_dlp_command = "yt-dlp -o output.mp4 -f 'mp4' --force-overwrite " + video_url;
                 system(yt_dlp_command.c_str());
                 pin_message.add_file(description + ".mp4", dpp::utility::read_file("output.mp4"));
-                event.edit_response("sending video to #📌-funye-vid-pin-archive-📌...");
+                event.edit_response("sending video to <#" + std::to_string(ARCHIVE_CHANNEL_ID) + ">");
             } else
             {
                 event.edit_response("archive failed: link is not valid");
@@ -128,7 +128,7 @@ int main()
                         }
                     } else
                     {
-                        event.edit_response("video sent to #📌-funye-vid-pin-archive-📌");
+                        event.edit_response("video sent to <#" + std::to_string(ARCHIVE_CHANNEL_ID) + ">");
                         system("rm output.mp4");
                     }
                 });
