@@ -5,7 +5,7 @@
 
 std::string BOT_TOKEN;
 dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556; // i should make this an environment variable
-std::string version = "0.0.5";
+std::string version = "0.0.6";
 
 int main()
 {
@@ -117,7 +117,7 @@ int main()
             }
             if (std::filesystem::exists("output.mp4"))
             {
-                bot.message_create(pin_message, [event](const dpp::confirmation_callback_t& callback)
+                bot.message_create(pin_message, [event, video_url](const dpp::confirmation_callback_t& callback)
                 {
                     if (callback.is_error())
                     {
@@ -128,7 +128,7 @@ int main()
                         }
                     } else
                     {
-                        event.edit_response("video sent to <#" + std::to_string(ARCHIVE_CHANNEL_ID) + ">");
+                        event.edit_response("[video](" + video_url + ") sent to <#" + std::to_string(ARCHIVE_CHANNEL_ID) + ">");
                         system("rm output.mp4");
                     }
                 });
