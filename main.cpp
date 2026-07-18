@@ -1,11 +1,27 @@
 #include <iostream>
 #include <cstdlib>
+#include <random>
 #include <regex>
 #include <dpp/dpp.h>
 
 std::string BOT_TOKEN;
 dpp::snowflake ARCHIVE_CHANNEL_ID = 1208233639066730556; // i should make this an environment variable
 std::string version = "0.0.6";
+
+// discord is weird and has its own epoch date, this function converts from standard epoch to their one so i dont have to remember
+dpp::snowflake calculate_snowflake_time(uint64_t timestamp)
+{
+    // braced initializer moment
+    return {(timestamp - 1420070400000) << 22};
+}
+
+uint64_t get_random_time(uint64_t min, uint64_t max)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(min, max);
+    return dis(gen);
+}
 
 int main()
 {
@@ -136,6 +152,18 @@ int main()
                 event.edit_response("archive failed: video failed to download");
             }
         }
+
+        // random command - will return a random message that contains a file from within the specified archive channel
+        if (event.command.get_command_name() == "random")
+        {
+            event.thinking();
+            // create a week to check for messages
+            int week_start = get_random_time(1638277200000, int(std::chrono::system_clock::now)) // start of 2022
+            // query discord for a vector of messages from within that time period
+            bot.messages_get(ARCHIVE_CHANNEL_ID, )
+            // if it contains messages with files, choose a random message to return
+            // otherwise, pick a new random week
+        }
     });
 
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -153,8 +181,11 @@ int main()
             pin_archive.add_option(
                 dpp::command_option(dpp::co_string, "description", "description of video for finding later", true));
             bot.global_command_create(pin_archive);
+            dpp::slashcommand random("random","returns a random pin_archive video",bot.me.id);
+            bot.global_command_create(random);
         }
     });
 
     bot.start(dpp::st_wait);
 }
+
