@@ -157,11 +157,27 @@ int main()
         if (event.command.get_command_name() == "random")
         {
             event.thinking();
-            // create a week to check for messages
-            int week_start = get_random_time(1638277200000, int(std::chrono::system_clock::now)) // start of 2022
-            // query discord for a vector of messages from within that time period
-            bot.messages_get(ARCHIVE_CHANNEL_ID, )
-            // if it contains messages with files, choose a random message to return
+            dpp::message response_message;
+            // create a week_start to check for messages
+            dpp::snowflake week_start = get_random_time(1638277200000, uint64_t(std::chrono::system_clock::now)); // start of 2022
+            // query discord for a vector of messages from within that time period (start of week to end of week)
+            bot.messages_get(ARCHIVE_CHANNEL_ID, 0, week_start, week_start + 604800000, 20, [event](const dpp::confirmation_callback_t& callback)
+            {
+                if (callback.is_error())
+                {
+                    event.edit_response("Failed to fetch messages");
+                }
+                auto messages = callback.get<dpp::message_map>();
+                for (const auto& [msg_id, msg] : messages)
+                {
+                    // if it contains messages with files, choose a random message to return
+                    if (!msg.attachments.empty()){
+                        event.edit_response(msg.get_url());
+                        break;
+                    }
+                }
+            });
+
             // otherwise, pick a new random week
         }
     });
