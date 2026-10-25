@@ -107,7 +107,7 @@ int main()
             dpp::message pin_message(ARCHIVE_CHANNEL_ID, description);
             if (std::regex_match(video_url, url_pattern))
             {
-                std::string yt_dlp_command = "yt-dlp -o output.mp4 -f 'mp4' --force-overwrite --use-postprocessor FFmpegCopyStream --ppa CopyStream:'-c:v libx264 -c:a aac -f mp4' " + video_url;
+                std::string yt_dlp_command = "yt-dlp -o output.mp4 -f 'mp4' --force-overwrite --use-postprocessor FFmpegCopyStream --ppa CopyStream:'-c:v libx264 -c:a mp3 -f mp4' " + video_url;
                 system(yt_dlp_command.c_str());
                 pin_message.add_file(description + ".mp4", dpp::utility::read_file("output.mp4"));
                 event.edit_response("sending video to <#" + std::to_string(ARCHIVE_CHANNEL_ID) + ">");
